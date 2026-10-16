@@ -6,7 +6,7 @@
 
 typedef struct Process {
     int PID;
-    char name[32];
+    char name[64];
 } process_t;
 
 void create_process(process_t* PROC, const int PID, const char* name){
@@ -55,7 +55,7 @@ char* read_file(const char* file_path, size_t* buf_size){
     if (fseek(fptr, 0, SEEK_SET) != 0)
         goto on_error;
 
-    char* buf = malloc(fsize + 1);
+    char* buf = (char*) malloc(fsize + 1);
     if (buf == NULL) 
         goto on_error;
     
@@ -70,6 +70,30 @@ char* read_file(const char* file_path, size_t* buf_size){
 
 on_error:
     fprintf(stderr, "fatal: Failed to read file.\n");
+    if (fptr != NULL)
+        fclose(fptr);
+    return NULL;
+}
+
+char* read_proc_name(const char* file_path){
+    FILE* fptr = fopen(file_path, "rb");
+
+    if (fptr == NULL)
+        goto on_error;
+
+    char* proc_name = (char*) malloc(64);
+    if(fgets(proc_name, 64, fptr) == NULL)
+        goto on_error;
+
+    int tmp = strlen(proc_name);
+    if (tmp > 0 && proc_name[tmp - 1] == '\n')
+        proc_name[tmp - 1] = '\0';
+
+    fclose(fptr);
+    return proc_name;
+
+on_error:
+    fprintf(stderr, "fatal: Failed to read process name");
     if (fptr != NULL)
         fclose(fptr);
     return NULL;
@@ -115,8 +139,8 @@ int fetchProcs(process_t** proc_list) {
             if (tmp > 0 && fp[tmp - 1] == '\n')
                 fp[tmp - 1] = '\0';
 
-            char* proc_name = read_file(fp, &name_len);
-            printf("%s|%s|\n", fp, proc_name);
+            char* proc_name = read_proc_name(fp);
+            // printf("%s|%s|\n", fp, proc_name);
 
             int intPID = atoi(PID);
             create_process(proc_list[i], intPID, proc_name);
