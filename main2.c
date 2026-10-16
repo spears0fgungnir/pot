@@ -9,9 +9,41 @@ typedef struct Process {
     char name[64];
 } process_t;
 
-void create_process(process_t* PROC, const int PID, const char* name){
+struct Process_list {
+    process_t** proc_list;
+    size_t count;
+    size_t capacity;
+};
+
+process_t* create_process(const int PID, char* name) {
+    process_t* PROC = malloc(sizeof(process_t));
+    if (PROC == NULL) {
+        fprintf(stderr, "Go buy more RAM lol");
+        return NULL;
+    }
     PROC->PID = PID;
     strcpy(PROC->name, name);
+    free(name);
+    return PROC;
+}
+
+void init_process(struct Process_list* processes) {
+    processes->count = 0;
+    processes->capacity = sizeof(process_t*) * 200;
+    processes->proc_list = (process_t**) malloc(processes->capacity);
+}
+
+int add_process(struct Process_list* processes, process_t* PROC) {
+    if (sizeof(PROC) * (processes->count + 1) >= processes->capacity) {
+        processes->capacity *= 2;
+        processes->proc_list = (process_t**) realloc(processes->proc_list, processes->capacity);
+        if (processes->proc_list == NULL)
+            return 1;
+    } else {
+        processes->proc_list[processes->count] = PROC;
+        processes->count++;
+    }
+    return 0;
 }
 
 int isnum(const char* s) {
@@ -117,7 +149,7 @@ size_t countProcs(void) {
     return proc_count;
 }
 
-int fetchProcs(process_t** proc_list) {
+int fetchProcs(struct Process_list* processes) {
     int i = 0;
     struct dirent* proc;
     DIR* procs = opendir("/proc/");
@@ -129,15 +161,8 @@ int fetchProcs(process_t** proc_list) {
 
     while ((proc = readdir(procs)) != NULL) {
         if (isnum(proc->d_name)) {
-            proc_list[i] = malloc(sizeof(process_t));
-            if (proc_list[i] == NULL){
-                fprintf(stderr, "Go buy more RAM lol");
-                return 1;
-            }
-
             char* PID = proc->d_name;
             char fp[12 + strlen(PID)];
-            size_t name_len = 0;
 
             sprintf(fp, "/proc/%s/comm", PID);
             int tmp = strlen(fp);
@@ -148,11 +173,11 @@ int fetchProcs(process_t** proc_list) {
             // printf("%s|%s|\n", fp, proc_name);
 
             int intPID = atoi(PID);
-            create_process(proc_list[i], intPID, proc_name);
-
-            
-            
-            free(proc_name);
+            process_t* new_proc = create_process(intPID, proc_name);
+            if (add_process(processes, new_proc) != 0) {
+                fprintf(stderr, "fatal: Cannot allocate more processes");
+                return 1;
+            }
             i++;
         }
     }
@@ -162,45 +187,28 @@ int fetchProcs(process_t** proc_list) {
 }
 
 int main(int argc, char* argv[]) {
+    /*
     size_t proc_count = countProcs();
     process_t** proc_list = malloc(sizeof(process_t*) * proc_count);
+    */
 
-    if (fetchProcs(proc_list) == 0){
-        for (int i = 0; i < proc_count; i++){
-            printf("[%d] PID: %d\t\t%s\n", i+1, proc_list[i]->PID, proc_list[i]->name);
+    struct Process_list processes;
+    init_process(&processes);
+
+    if (fetchProcs(&processes) == 0){
+        for (int i = 0; i < processes.count; i++){
+            printf("[%d] PID: %d\t\t%s\n", i+1, processes.proc_list[i]->PID, processes.proc_list[i]->name);
         }
     } else {
         fprintf(stderr, "IDK What happened");
         return 1;
     }
     
-    for (size_t i = 0; i < proc_count; i++)
-        free(proc_list[i]);
+    for (size_t i = 0; i < processes.count; i++)
+        free(processes.proc_list[i]);
 
-    free(proc_list);
+    free(processes.proc_list);
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
