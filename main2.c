@@ -39,10 +39,9 @@ int add_process(struct Process_list* processes, process_t* PROC) {
         processes->proc_list = (process_t**) realloc(processes->proc_list, processes->capacity);
         if (processes->proc_list == NULL)
             return 1;
-    } else {
-        processes->proc_list[processes->count] = PROC;
-        processes->count++;
     }
+    processes->proc_list[processes->count] = PROC;
+    processes->count++;
     return 0;
 }
 
