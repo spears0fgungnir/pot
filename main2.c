@@ -130,6 +130,11 @@ int fetchProcs(process_t** proc_list) {
     while ((proc = readdir(procs)) != NULL) {
         if (isnum(proc->d_name)) {
             proc_list[i] = malloc(sizeof(process_t));
+            if (proc_list[i] == NULL){
+                fprintf(stderr, "Go buy more RAM lol");
+                return 1;
+            }
+
             char* PID = proc->d_name;
             char fp[12 + strlen(PID)];
             size_t name_len = 0;
@@ -145,10 +150,7 @@ int fetchProcs(process_t** proc_list) {
             int intPID = atoi(PID);
             create_process(proc_list[i], intPID, proc_name);
 
-            if (proc_list[i] == NULL){
-                fprintf(stderr, "Go buy more RAM lol");
-                return 1;
-            }
+            
             
             free(proc_name);
             i++;
