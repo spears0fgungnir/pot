@@ -136,7 +136,7 @@ on_error:
     return NULL;
 }
 
-int fetchProcs(struct Process_list* processes) {
+int fetch_processes(struct Process_list* processes) {
     int i = 0;
     struct dirent* proc;
     DIR* procs = opendir("/proc/");
@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
     if (init_processes(&processes) != 0)
         goto terminate;
 
-    if (fetchProcs(&processes) != 0)
+    if (fetch_processes(&processes) != 0)
         goto terminate;
 
     for (int i = 0; i < processes.count; i++)
