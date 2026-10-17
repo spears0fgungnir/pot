@@ -18,12 +18,12 @@ int init_vector(vec_t* vec) {
 
 int add_vector_index(vec_t* vec, void* item, size_t idx) {
     if (vec == NULL || item == NULL) {
-        fprintf(stderr, "fatal: Failed to add item at specified index - 1\n");
+        fprintf(stderr, "fatal: Failed to add item at specified index.\n");
         return 1;
     }
 
     if (idx >= SIZE_MAX / sizeof(*vec->items)) {
-        fprintf(stderr, "fatal: Failed to add item at specified index - 2\n");
+        fprintf(stderr, "fatal: Failed to add item at specified index.\n");
         return 1;
     }
 
@@ -31,7 +31,7 @@ int add_vector_index(vec_t* vec, void* item, size_t idx) {
         void** tmp = realloc(vec->items, sizeof(*vec->items) * (idx + 1));
          
         if (tmp == NULL) {
-            fprintf(stderr, "fatal: Failed to add item at specified index - 3\n");
+            fprintf(stderr, "fatal: Failed to add item at specified index\n");
             return 1;
         }
         
@@ -61,12 +61,12 @@ int add_vector_index(vec_t* vec, void* item, size_t idx) {
 
 int remove_vector_index(vec_t* vec, size_t idx) {
     if (vec == NULL) {
-        fprintf(stderr, "fatal: Failed to remove item at specified index");
+        fprintf(stderr, "fatal: Failed to remove item at specified index.\n");
         return 1;
     }
 
     if (idx >= vec->max_index) {
-        fprintf(stderr, "fatal: Failed to remove item at specified index");
+        fprintf(stderr, "fatal: Failed to remove item at specified index\n");
         return 1;
     }
 
@@ -81,7 +81,7 @@ int remove_vector_index(vec_t* vec, size_t idx) {
 
 int free_vector(vec_t* vec) {
     if (vec == NULL) {
-        fprintf(stderr, "fatal: Failed to free allocated vector");
+        fprintf(stderr, "fatal: Failed to free allocated vector\n");
         return 1;
     }
 
