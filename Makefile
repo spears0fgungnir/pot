@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -std=c11
 
-TARGET = code 
+TARGET = pot 
 OBJS = main.o vector.o 
 
 $(TARGET): $(OBJS)
