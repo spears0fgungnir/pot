@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "vector.h"
 
 int init_vector(vec_t* vec) {
@@ -13,45 +14,31 @@ int init_vector(vec_t* vec) {
     return 0;
 }
 
-int add_vector(vec_t* vec, void* item) {
-    if (vec == NULL)
-        return 1;
-
-    if (sizeof(item) * (vec->max_index + 1) > vec->capacity) {
-        void** tmp = realloc(vec->items, vec->capacity + sizeof(item));
-
-        if (tmp == NULL)
-            return 1;
-
-        vec->items = tmp;
-        vec->capacity += sizeof(item);
-    }
-
-    vec->items[vec->max_index] = item;
-    vec->count++;
-    vec->max_index++;
-    return 0;
-}
-
 int add_vector_index(vec_t* vec, void* item, size_t idx) {
-    if (vec == NULL)
+    if (vec == NULL || item == NULL)
         return 1;
 
-    if (sizeof(item) * (idx + 1) > vec->capacity) {
-        void** tmp = realloc(vec->items, sizeof(item) * (idx + 1));
+    if (idx >= SIZE_MAX / sizeof(*vec->items))
+        return 1;
+
+    if (sizeof(*vec->items) * (idx + 1) > vec->capacity) {
+        void** tmp = realloc(vec->items, sizeof(*vec->items) * (idx + 1));
 
         if (tmp == NULL)
             return 1;
 
         vec->items = tmp;
-        vec->capacity = sizeof(item) * (idx + 1);
+        vec->capacity = sizeof(*vec->items) * (idx + 1);
 
 
-        for (int i = vec->max_index; i <= idx; i++)
+        for (size_t i = vec->max_index; i <= idx; i++)
             vec->items[i] = NULL;
 
     }
     vec->max_index = vec->max_index > idx + 1 ? vec->max_index : idx + 1;
+
+    if (vec->items[idx] == item)
+        return 0;
 
     if (vec->items[idx] != NULL) {
         free(vec->items[idx]);
@@ -84,7 +71,7 @@ int free_vector(vec_t* vec) {
     if (vec == NULL)
         return 1;
 
-    for (int i = 0; i < vec->max_index; i++)
+    for (size_t i = 0; i < vec->max_index; i++)
         if (vec->items[i] != NULL)
             free(vec->items[i]);
 
