@@ -13,11 +13,6 @@ typedef struct Process {
 /*  proc_list -> Process_list.items;
  *  count -> Process_list.count;
  *  capacity -> Process_list.capacity;
- *
- *
- *
- *
- *
  */
 
 process_t* create_process(const int PID, char* name) {
