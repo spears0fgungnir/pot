@@ -17,7 +17,7 @@ int add_vector(vec_t* vec, void* item) {
     if (vec == NULL)
         return 1;
 
-    if (sizeof(item) * (vec->count + 1) > vec->capacity) {
+    if (sizeof(item) * (vec->max_index + 1) > vec->capacity) {
         vec->capacity += sizeof(item);
         void** tmp = realloc(vec->items, vec->capacity);
 
@@ -52,6 +52,9 @@ int add_vector_index(vec_t* vec, void* item, size_t idx) {
     }
 
     vec->max_index = vec->max_index > idx + 1 ? vec->max_index : idx + 1;
+    if (vec->items[idx] != NULL)
+        free(vec->items[idx]);
+
     vec->items[idx] = item;
     vec->count++;
     return 0;
