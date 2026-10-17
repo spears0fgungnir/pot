@@ -18,13 +18,13 @@ int add_vector(vec_t* vec, void* item) {
         return 1;
 
     if (sizeof(item) * (vec->max_index + 1) > vec->capacity) {
-        vec->capacity += sizeof(item);
-        void** tmp = realloc(vec->items, vec->capacity);
+        void** tmp = realloc(vec->items, vec->capacity + sizeof(item));
 
         if (tmp == NULL)
             return 1;
 
         vec->items = tmp;
+        vec->capacity += sizeof(item);
     }
 
     vec->items[vec->max_index] = item;
@@ -38,22 +38,26 @@ int add_vector_index(vec_t* vec, void* item, size_t idx) {
         return 1;
 
     if (sizeof(item) * (idx + 1) > vec->capacity) {
-        vec->capacity = sizeof(item) * (idx + 1);
-        void** tmp = realloc(vec->items, vec->capacity);
+        void** tmp = realloc(vec->items, sizeof(item) * (idx + 1));
 
         if (tmp == NULL)
             return 1;
 
         vec->items = tmp;
+        vec->capacity = sizeof(item) * (idx + 1);
 
-        for (int i = vec->max_index; i < idx; i++)
+
+        for (int i = vec->max_index; i <= idx; i++)
             vec->items[i] = NULL;
 
     }
-
     vec->max_index = vec->max_index > idx + 1 ? vec->max_index : idx + 1;
-    if (vec->items[idx] != NULL)
+
+    if (vec->items[idx] != NULL) {
         free(vec->items[idx]);
+        vec->items[idx] = item;
+        return 0;
+    }
 
     vec->items[idx] = item;
     vec->count++;
