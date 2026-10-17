@@ -27,7 +27,7 @@ int add_vector(vec_t* vec, void* item) {
         vec->items = tmp;
     }
 
-    vec->items[max_index] = item;
+    vec->items[vec->max_index] = item;
     vec->count++;
     vec->max_index++;
     return 0;
