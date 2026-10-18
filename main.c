@@ -96,7 +96,7 @@ char* read_proc_name(const char* file_path){
     return proc_name;
 
 on_error:
-    fprintf(stderr, "fatal: Failed to read process name");
+    fprintf(stderr, "fatal: Failed to read process name.");
     if (fptr != NULL)
         fclose(fptr);
     return NULL;
