@@ -4,32 +4,7 @@
 #include <dirent.h>
 #include <stdbool.h>
 #include "vector.h"
-
-typedef struct Process {
-    int PID;
-    char name[64];
-} process_t;
-
-/*  proc_list -> Process_list.items;
- *  count -> Process_list.count;
- *  capacity -> Process_list.capacity;
- */
-
-process_t* create_process(const int PID, char* name) {
-    process_t* PROC = malloc(sizeof(process_t));
-    if (PROC == NULL) {
-        fprintf(stderr, "fatal: Failed to allocate memory\n");
-        return NULL;
-    }
-    PROC->PID = PID;
-    strcpy(PROC->name, name);
-    if (PROC->name == NULL) {
-        fprintf(stderr, "fatal: Unable to retrieve process name\n");
-        return NULL;
-    }
-    // free(name);
-    return PROC;
-}
+#include "process.h"
 
 int isnum(const char* s) {
     if (s == NULL || *s == '\0')
@@ -78,30 +53,6 @@ on_error:
     return NULL;
 }
 
-char* read_proc_name(const char* file_path){
-    FILE* fptr = fopen(file_path, "rb");
-
-    if (fptr == NULL)
-        goto on_error;
-
-    char* proc_name = (char*) malloc(64);
-    if(fgets(proc_name, 64, fptr) == NULL)
-        goto on_error;
-
-    int tmp = strlen(proc_name);
-    if (tmp > 0 && proc_name[tmp - 1] == '\n')
-        proc_name[tmp - 1] = '\0';
-
-    fclose(fptr);
-    return proc_name;
-
-on_error:
-    fprintf(stderr, "fatal: Failed to read process name.");
-    if (fptr != NULL)
-        fclose(fptr);
-    return NULL;
-}
-
 int fetch_processes(vec_t* processes) {
     struct dirent* proc;
     DIR* procs = opendir("/proc/");
@@ -114,27 +65,13 @@ int fetch_processes(vec_t* processes) {
     while ((proc = readdir(procs)) != NULL) {
         if (isnum(proc->d_name)) {
             char* PID = proc->d_name;
-            char fp[12 + strlen(PID)];
-
-            sprintf(fp, "/proc/%s/comm", PID);
-            int tmp = strlen(fp);
-            if (tmp > 0 && fp[tmp - 1] == '\n')
-                fp[tmp - 1] = '\0';
-
-            char* proc_name = read_proc_name(fp);
-            if (proc_name == NULL)
-                return 1;
-
-            // printf("%s|%s|\n", fp, proc_name);
-
-            int intPID = atoi(PID);
-            process_t* new_proc = create_process(intPID, proc_name);
+            process_t* new_proc = create_process(PID);
             if (new_proc == NULL)
                 return 1;
-
+            
+            int intPID = atoi(PID);
             if (add_vector_index(processes, new_proc, (size_t) intPID) != 0)
                 return 1;
-
         }
     }
 
