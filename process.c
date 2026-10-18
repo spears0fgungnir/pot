@@ -3,19 +3,22 @@
 #include <string.h>
 #include "process.h"
 
-char* read_line(const char* file_path) {
+char* read_line(const char* file_path, size_t mem_size) {
     FILE* fptr = fopen(file_path, "rb");
+
+    if (mem_size < 1)
+        goto on_error;
 
     if (fptr == NULL)
         goto on_error;
 
-    char* file_line = (char*) malloc(64);
+    char* file_line = (char*) malloc(mem_size);
     if (file_line == NULL) {
         free(file_line);
         goto on_error;
     }
 
-    if(fgets(file_line, 64, fptr) == NULL) {
+    if(fgets(file_line, mem_size, fptr) == NULL) {
         free(file_line);
         goto on_error;
     }
@@ -43,7 +46,7 @@ char* read_name_process(char* PID) {
     if (tmp > 0 && fp[tmp - 1] == '\n')
         fp[tmp - 1] = '\0';
 
-    char* proc_name = read_line(fp);
+    char* proc_name = read_line(fp, 64);
     return proc_name;
 }
 
