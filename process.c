@@ -3,6 +3,26 @@
 #include <string.h>
 #include "process.h"
 
+int chop_by_delim(char* data, char* dest, char delim, size_t field) {
+    int i = 0, c = 0, start = 0, end = 0;
+    while (i < field) {
+        if (data[c] != delim) {
+            while (data[c] != delim)
+                c++;
+            start = i;
+            end = c;
+            i++;
+        }
+    }
+    char buf[end - start + 1];
+    for (int i = start; i <= end; i++)
+        buf[i - start] = data[i];
+
+    buf[end - start + 1] = '\0';
+    strcpy(dest, buf);
+    return 0;
+}
+
 char* read_line(const char* file_path, size_t mem_size) {
     FILE* fptr = fopen(file_path, "rb");
 
@@ -67,5 +87,12 @@ process_t* create_process(char* PID) {
     new_proc->PID = atoi(PID);
     strcpy(new_proc->name, proc_name);
     free(proc_name);
+
+    char fp[sizeof("/proc//stat" + strlen(PID))];
+    snprintf(fp, sizeof(fp), "/proc/%s/stat", PID);
+
+    char* stats = read_line(fp, 1024);
+    // work from here 
+
     return new_proc;
 }
